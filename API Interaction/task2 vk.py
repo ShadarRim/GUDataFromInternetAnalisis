@@ -13,6 +13,7 @@ response = requests.get(f'https://api.vk.com/method/friends.getOnline?v=5.52&acc
 repolist = []
 if response.ok:
     data = json.loads(response.text)
-    pprint(data)
+    with open('vk.txt', 'w') as f:
+        json.dump(data, f)
 else:
     print('Mistake')
