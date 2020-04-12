@@ -7,7 +7,6 @@ import pandas as pd
 def search_sj(keyword):
     sj_link = 'https://www.superjob.ru/'
     response = requests.get(f'{sj_link}/vacancy/search/?keywords={keyword}')
-    i = 0
     sj_vac_parse_list = []
 
     while True:
@@ -27,39 +26,34 @@ def search_sj(keyword):
                 dict['source'] = 'sj'
                 sal = elem.find_all('span', {
                     'class': '_3mfro _2Wp8I _31tpt f-test-text-company-item-salary PlM3e _2JVkc _2VHxz'})[0]
-                if sal.text == 'По договорённости':
-                    dict['sal_min'] = None
-                    dict['sal_max'] = None
-                    dict['sal_cur'] = None
-                else:
-                    sal_list = re.findall("\d+", sal.text)
-                    if len(re.findall("от", sal.text)):
-                        dict['sal_min'] = sal_list[0] if len(sal_list) == 1 else sal_list[0] + sal_list[1]
-                        dict['sal_max'] = None
-                    elif (len(re.findall("до", sal.text))):
-                        dict['sal_min'] = None
-                        dict['sal_max'] = sal_list[0] if len(sal_list) == 1 else sal_list[0] + sal_list[1]
-                    elif (len(re.findall("—", sal.text))):
-                        if len(sal_list) == 4:
-                            dict['sal_min'] = sal_list[0] + sal_list[1]
-                            dict['sal_max'] = sal_list[2] + sal_list[3]
-                        elif len(sal_list) == 3:
-                            dict['sal_min'] = sal_list[0]
-                            dict['sal_max'] = sal_list[1] + sal_list[2]
-                        else:
-                            dict['sal_min'] = sal_list[0]
-                            dict['sal_max'] = sal_list[1]
-                    else:
-                        dict['sal_min'] = sal_list[0] if len(sal_list) == 1 else sal_list[0] + sal_list[1]
-                        dict['sal_max'] = sal_list[0] if len(sal_list) == 1 else sal_list[0] + sal_list[1]
 
-                    if re.findall("руб", sal.text):
-                        dict['sal_cur'] = "Rub"
-                    else:
-                        dict['sal_cur'] = "Not Rub"
+                dict['sal_min'] = ''
+                dict['sal_max'] = ''
+                dict['sal_cur'] = ''
+
+                sal_list = sal.text.split("\xa0")
+                if 'от' in sal_list:
+                    for elem in sal_list[1:len(sal_list)-1]:
+                        dict['sal_min'] += elem
+                elif 'до' in sal_list:
+                    for elem in sal_list[1:len(sal_list)-1]:
+                        dict['sal_max'] += elem
+                elif '—' in sal_list:
+                    pos = sal_list.index('—')
+                    for elem in sal_list[:pos]:
+                        dict['sal_min'] += elem
+                    for elem in sal_list[pos+1:len(sal_list)-1]:
+                        dict['sal_max'] += elem
+                else:
+                    for elem in sal_list[1:len(sal_list)-1]:
+                        dict['sal_min'] += elem
+                        dict['sal_max'] += elem
+
+                dict['sal_min'] = None if dict['sal_min'] == '' else dict['sal_min']
+                dict['sal_max'] = None if dict['sal_max'] == '' else dict['sal_max']
+                dict['sal_cur'] = None if 'По договорённости' in sal_list else sal_list[-1]
             else:
                 continue
-
             sj_vac_parse_list.append(dict)
 
         next_step = soup.find_all('a', {'class': 'icMQ_ _1_Cht _3ze9n f-test-button-dalshe f-test-link-Dalshe'})
@@ -79,57 +73,53 @@ def search_hh(keyword):
     while True:
         soup = bs(response.text, 'lxml')
         hh_vac_block = soup.find_all('div', {'class': 'vacancy-serp'})
-        # print(hh_vac_block)
         hh_vac_list = hh_vac_block[0].find_all('div',
                                                {'data-qa': 'vacancy-serp__vacancy vacancy-serp__vacancy_premium'}) + \
                       hh_vac_block[0].find_all('div', {'data-qa': 'vacancy-serp__vacancy'})
-        # vacancy-serp__vacancy
 
-        for elem in hh_vac_list:
+        for lelem in hh_vac_list:
             dict = {}
 
-            dict['name'] = elem.find_all('a', {'class': 'bloko-link HH-LinkModifier'})[0].text
-            dict['link'] = elem.find_all('a', {'class': 'bloko-link HH-LinkModifier'})[0]['href']
+            dict['name'] = lelem.find_all('a', {'class': 'bloko-link HH-LinkModifier'})[0].text
+            dict['link'] = lelem.find_all('a', {'class': 'bloko-link HH-LinkModifier'})[0]['href']
+            dict['source'] = 'hh'
 
-            sal_text = elem.find_all('span', {'class': 'bloko-section-header-3 bloko-section-header-3_lite'})
-            if len(sal_text) == 1:
+            sal = lelem.find_all('span', {'class': 'bloko-section-header-3 bloko-section-header-3_lite'})
+
+            if len(sal) == 1:
                 dict['sal_min'] = None
                 dict['sal_max'] = None
                 dict['sal_cur'] = None
             else:
-                sal_text = sal_text[1].text
-                sal_list = re.findall("\d+", sal_text)
+                dict['sal_min'] = ''
+                dict['sal_max'] = ''
+                dict['sal_cur'] = ''
+                spec_sal = sal[1].text
+                spec_sal = spec_sal.replace(' ', "\xa0")
+                spec_sal = spec_sal.replace('-', "\xa0-\xa0")
 
-                if len(re.findall("от", sal_text)):
-                    dict['sal_min'] = sal_list[0] if len(sal_list) == 1 else sal_list[0] + sal_list[1]
-                    dict['sal_max'] = None
-                elif (len(re.findall("до", sal_text))):
-                    dict['sal_min'] = None
-                    dict['sal_max'] = sal_list[0] if len(sal_list) == 1 else sal_list[0] + sal_list[1]
-                elif (len(re.findall("-", sal_text))):
-                    if len(sal_list) == 4:
-                        dict['sal_min'] = sal_list[0] + sal_list[1]
-                        dict['sal_max'] = sal_list[2] + sal_list[3]
-                    elif len(sal_list) == 3:
-                        dict['sal_min'] = sal_list[0]
-                        dict['sal_max'] = sal_list[1] + sal_list[2]
-                    else:
-                        dict['sal_min'] = sal_list[0]
-                        dict['sal_max'] = sal_list[1]
-                else:
-                    dict['sal_min'] = sal_list[0] if len(sal_list) == 1 else sal_list[0] + sal_list[1]
-                    dict['sal_max'] = sal_list[0] if len(sal_list) == 1 else sal_list[0] + sal_list[1]
+                sal_list = spec_sal.split("\xa0")
 
-                if re.findall("руб", sal_text):
-                    dict['sal_cur'] = "Rub"
-                elif re.findall("грн", sal_text):
-                    dict['sal_cur'] = "Grn"
-                elif re.findall('EUR', sal_text):
-                    dict['sal_cur'] = 'EUR'
-                elif re.findall('USD', sal_text):
-                    dict['sal_cur'] = 'USD'
+                if 'от' in sal_list:
+                    for elem in sal_list[1:len(sal_list) - 1]:
+                        dict['sal_min'] += elem
+                elif 'до' in sal_list:
+                    for elem in sal_list[1:len(sal_list) - 1]:
+                        dict['sal_max'] += elem
+                elif '-' in sal_list:
+                    pos = sal_list.index('-')
+                    for elem in sal_list[:pos]:
+                        dict['sal_min'] += elem
+                    for elem in sal_list[pos + 1:len(sal_list) - 1]:
+                        dict['sal_max'] += elem
                 else:
-                    dict['sal_cur'] = 'Nor Rub'
+                    for elem in sal_list[1:len(sal_list) - 1]:
+                        dict['sal_min'] += elem
+                        dict['sal_max'] += elem
+
+                dict['sal_min'] = None if dict['sal_min'] == '' else dict['sal_min']
+                dict['sal_max'] = None if dict['sal_max'] == '' else dict['sal_max']
+                dict['sal_cur'] = None if 'По договорённости' in sal_list else sal_list[-1]
 
             hh_vac_parce_list.append(dict)
 
@@ -146,6 +136,7 @@ def search_hh(keyword):
 
 keyword = 'python'
 vac_list = search_sj(keyword) + search_hh(keyword)
+#pprint(vac_list)
 
 print(pd.DataFrame(vac_list))
 
