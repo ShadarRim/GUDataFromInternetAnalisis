@@ -20,4 +20,6 @@ class LmItem(scrapy.Item):
     params_name = scrapy.Field()
     params_value = scrapy.Field()
     params_dict = scrapy.Field()
+    image_urls = scrapy.Field()
+    images = scrapy.Field()
 

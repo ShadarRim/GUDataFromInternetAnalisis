@@ -2,6 +2,7 @@
 import scrapy
 from scrapy.http import HtmlResponse
 from lm.items import LmItem
+from scrapy.loader import ItemLoader
 
 class LermerSpider(scrapy.Spider):
     name = 'lermer'
