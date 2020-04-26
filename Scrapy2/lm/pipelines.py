@@ -14,7 +14,7 @@ class LmPipeline(object):
 
 class LmPhotosPipeline(ImagesPipeline):
     def get_media_requests(self, item, info):
-        return item
+        pass
 
     def item_completed(self, results, item, info):
         return item
