@@ -24,17 +24,23 @@ class LermerSpider(scrapy.Spider):
         yield response.follow(next_page, callback=self.parse)
 
     def pars_target(self, response:HtmlResponse):
-        name = response.xpath("//h1[@slot='title']/text()").extract_first()
-        price = response.xpath("//uc-pdp-price-view[@slot='primary-price']/span[@slot='price']/text()").extract_first()
-        cur = response.xpath("//uc-pdp-price-view[@slot='primary-price']/span[@slot='currency']/text()").extract_first()
-        unic_photo = response.xpath("//picture[@slot='pictures']").extract()
-        pict = response.xpath("//picture[@slot='pictures']/source/@srcset").extract()
-        params_name = response.xpath("//dt[@class='def-list__term']/text()").extract()
-        params_value = response.xpath("//dd[@class='def-list__definition']/text()").extract()
-        #big_photo_count = len(response.xpath("//picture[@slot='pictures']").extract())
-        #pict = response.xpath("//picture[@slot='pictures']/source/@srcset").extract()
-        #pict_to_extract = []
-        #for i in range(0,len(pict),int(len(pict)/big_photo_count))
-        #    pict_to_extract.append(pict[i])
+        print(response.url)
+        loader = ItemLoader(item=LmItem(), response=response)
+        loader.add_xpath('name', "//h1[@slot='title']/text()")
+        loader.add_xpath('price', "//uc-pdp-price-view[@slot='primary-price']/span[@slot='price']/text()")
+        loader.add_xpath('cur', "//uc-pdp-price-view[@slot='primary-price']/span[@slot='currency']/text()")
+        loader.add_xpath('unic_photo', "//picture[@slot='pictures']")
+        loader.add_xpath('pict', "//picture[@slot='pictures']/source/@srcset")
+        loader.add_xpath('params', "//dt[@class='def-list__term']/text() | //dd[@class='def-list__definition']/text()")
 
-        yield LmItem(name=name, price=price, cur=cur, unic_photo=unic_photo, pict=pict, params_name=params_name, params_value=params_value)
+        yield loader.load_item()
+
+#        name = response.xpath("//h1[@slot='title']/text()").extract_first()
+#        price = response.xpath("//uc-pdp-price-view[@slot='primary-price']/span[@slot='price']/text()").extract_first()
+#        cur = response.xpath("//uc-pdp-price-view[@slot='primary-price']/span[@slot='currency']/text()").extract_first()
+#        unic_photo = response.xpath("//picture[@slot='pictures']").extract()
+#        pict = response.xpath("//picture[@slot='pictures']/source/@srcset").extract()
+#        params_name = response.xpath("//dt[@class='def-list__term']/text()").extract()
+#        params_value = response.xpath("//dd[@class='def-list__definition']/text()").extract()
+
+#        yield LmItem(name=name, price=price, cur=cur, unic_photo=unic_photo, pict=pict, params_names=params_name, params_values=params_value)

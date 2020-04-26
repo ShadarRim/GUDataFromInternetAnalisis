@@ -8,6 +8,9 @@
 import scrapy
 from scrapy.pipelines.images import ImagesPipeline
 from pymongo import MongoClient
+from urllib.parse import urlparse
+import os
+from pprint import pprint
 
 class LmPipeline(object):
     def __init__(self):
@@ -16,7 +19,15 @@ class LmPipeline(object):
 
     def process_item(self, item, spider):
         collection = self.mongo_base[spider.name]
-        collection.insert_one(item)
+
+        to_collect = {}
+        to_collect['name'] = item['name']
+        to_collect['unic_pict'] = item['unic_pict']
+        to_collect['params'] = item['params']
+        to_collect['price'] = item['price']
+        to_collect['cur'] = item['cur']
+
+        collection.insert_one(to_collect)
         return item
 
 class LmPhotosPipeline(ImagesPipeline):
@@ -32,6 +43,9 @@ class LmPhotosPipeline(ImagesPipeline):
                     yield scrapy.Request(img)
                 except Exception as e:
                     print(e)
+
+    def file_path(self, request, response=None, info=None):
+        return f'{info.spider.name}/' + os.path.basename(urlparse(request.url).path)
 
     def item_completed(self, results, item, info):
         if results[0]:
