@@ -74,7 +74,6 @@ DOWNLOAD_DELAY = 2
 ITEM_PIPELINES = {
     'lm.pipelines.LmPipeline': 300,
     'lm.pipelines.LmPhotosPipeline': 100,
-    'lm.pipelines.TestPip:': 1,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

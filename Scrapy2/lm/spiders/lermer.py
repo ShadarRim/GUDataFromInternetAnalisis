@@ -17,13 +17,10 @@ class LermerSpider(scrapy.Spider):
 
         target_links = response.xpath("//div[@class='ui-product-card']/@data-product-url").extract()
 
-        i = 0
         for link in target_links:
-            i += 1
-            if i == 2: break
             yield response.follow(link, callback=self.pars_target)
 
-        #yield response.follow(next_page, callback=self.parse)
+        yield response.follow(next_page, callback=self.parse)
 
     def pars_target(self, response:HtmlResponse):
         name = response.xpath("//h1[@slot='title']/text()").extract_first()

@@ -8,16 +8,18 @@
 import scrapy
 from scrapy.pipelines.images import ImagesPipeline
 
-class TestPip(object):
-    def process_item(self, item, spider):
-        return item
-
 class LmPipeline(object):
     def process_item(self, item, spider):
         return item
 
 class LmPhotosPipeline(ImagesPipeline):
     def get_media_requests(self, item, info):
+        return item
+
+    def item_completed(self, results, item, info):
+        return item
+
+'''
         print('hi')
         a = 5
 
@@ -31,6 +33,4 @@ class LmPhotosPipeline(ImagesPipeline):
                     yield scrapy.Request(img)
                 except Exception as e:
                     print(e)
-
-    def item_completed(self, results, item, info):
-        return item
+'''
