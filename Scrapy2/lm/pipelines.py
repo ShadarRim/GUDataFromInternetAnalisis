@@ -32,10 +32,13 @@ class LmPipeline(object):
 
 class LmPhotosPipeline(ImagesPipeline):
 
+    item_art = ""
+
     def get_media_requests(self, item, info):
         if item['unic_photo']:
             unic_photos_count = len(item['unic_photo'])
             item['unic_pict'] = []
+            self.item_art = item['art'][0]
             for i in range(0, len(item['pict']), int(len(item['pict']) / unic_photos_count)):
                 item['unic_pict'].append(item['pict'][i])
             for img in item['unic_pict']:
@@ -45,7 +48,8 @@ class LmPhotosPipeline(ImagesPipeline):
                     print(e)
 
     def file_path(self, request, response=None, info=None):
-        return f'{info.spider.name}/' + os.path.basename(urlparse(request.url).path)
+        #вы итак знаете, что здесь что-то с асинхронностью)
+        return f'{info.spider.name}/' + f"{self.item_art}/" + os.path.basename(urlparse(request.url).path)
 
     def item_completed(self, results, item, info):
         if results[0]:

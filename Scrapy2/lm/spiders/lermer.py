@@ -32,6 +32,7 @@ class LermerSpider(scrapy.Spider):
         loader.add_xpath('unic_photo', "//picture[@slot='pictures']")
         loader.add_xpath('pict', "//picture[@slot='pictures']/source/@srcset")
         loader.add_xpath('params', "//dt[@class='def-list__term']/text() | //dd[@class='def-list__definition']/text()")
+        loader.add_xpath('art', "//span[@slot='article']/@content")
 
         yield loader.load_item()
 

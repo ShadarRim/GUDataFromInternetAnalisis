@@ -18,8 +18,10 @@ def clear_pop(val):
     return val.replace('\n', '').strip()
 
 def to_int(val):
-    print(val)
-    return int(val[0])
+    if val[0].isdigit():
+        return int(val[0])
+    else:
+        return int(''.join(val[0].split(' ')))
 
 class LmItem(scrapy.Item):
     # define the fields for your item here like:
@@ -29,6 +31,7 @@ class LmItem(scrapy.Item):
     cur = scrapy.Field(output_processor=TakeFirst())
     unic_photo = scrapy.Field(output_processor=Identity())
     pict = scrapy.Field(output_processor=Identity())
+    art = scrapy.Field(output_processor=Identity())
     unic_pict = scrapy.Field()
     params_dict = scrapy.Field(input_processor=Identity())
     params = scrapy.Field(input_processor=Compose(clear_desc), output_processor=TakeFirst())
