@@ -7,7 +7,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from pymongo import MongoClient
-from selenium.webdriver.support.ui import Select
 import time
 
 driver = webdriver.Chrome()
@@ -15,11 +14,6 @@ driver.get('https://m.mail.ru/login')
 
 assert "Вход — Почта Mail.Ru" in driver.title
 
-
-
-#elem = WebDriverWait(driver, 10).until(
-#    EC.presence_of_element_located((By.NAME, 'Login'))
-#)
 
 time.sleep(1)
 elem = driver.find_element_by_name('Login')
@@ -63,11 +57,15 @@ for k in range(10):
             EC.presence_of_element_located((By.XPATH, "//span[@class='letter-contact']"))
         )
         base_dict['contact'] = contact_elem.text
-        print(base_dict)
+
+        text_elem = driver.find_elements_by_xpath("//div[@class='letter-body']")
+
+        base_dict['text'] = text_elem[0].text
+
         driver.back()
         mail_letters.append(base_dict)
         time.sleep(1)
-        break
+
 
     i = len(links)
     #скролим
