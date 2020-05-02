@@ -31,7 +31,7 @@ while True:
         
         dict_items['link'] = pr.get_attribute('href')
         description = json.loads(pr.get_attribute('data-product-info'))
-    
+
         dict_items['name'] = description['productName']
         description.pop('productName')
 
